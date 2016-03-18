@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>旋转180度</title>
+	<style type="text/css">
+	#center{
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	}
+		#canvas{
+			border: dimgray 2px solid;
+			width:400px;
+			height: 400px;
+		}
+	</style>
+</head>
+<body>
+<button id="demo1">180度</button>
+<button id="demo2">任意角度</button>
+<input id="demo2_input" type="text">
+<button id="demo3">分段拉伸</button>
+
+<div id="center">
+	<canvas id="canvas"></canvas>
+</div>
+<script type="text/javascript">
+	var canvas = document.getElementById("canvas");
+	var context = canvas.getContext("2d");
+	var image = new Image();
+	image.src = "./new_img.bmp";
+	image.onload = function(){
+
+		context.drawImage(image,0,0,300,150);
+		var button1 = document.getElementById("demo1");
+		button1.onclick=function(){
+				var imagedate = context.getImageData(0,0,canvas.width,canvas.height);
+
+				temp = new Array(imagedate.data.length);
+
+				for(var i = 0;i<imagedate.data.length;i++){
+					temp[i]=imagedate.data[i];
+				}
+				for(var i = 0;i<imagedate.data.length;i+=4){
+					imagedate.data[i]=temp[temp.length-1-i-3];
+					imagedate.data[i+1]=temp[temp.length-1-i-2];
+					imagedate.data[i+2]=temp[temp.length-1-i-1];
+					imagedate.data[i+3]=temp[temp.length-1-i-0];
+
+				}
+				context.putImageData(imagedate,0,0);
+				};
+		var button2 = document.getElementById("demo2");
+		var input =  document.getElementById("demo2_input");
+		button2.onclick=function(){
+			var imagedate = context.getImageData(0,0,canvas.width,canvas.height);
+			temp = new Array(imagedate.data.length);
+
+			for(var i = 0;i<imagedate.data.length;i++){
+				temp[i]=imagedate.data[i];
+			}
+			var mid_x = parseInt(image.width/2);
+			var mid_y = parseInt(image.height/2);
+			for(var i =0;i<imagedate.data.length;i++)
+			{
+				imagedate.data[i]=0;
+			}
+			for(var i = 0;i<imagedate.data.length;i+=4){
+				var x = ((i/4)%image.width==0)?parseInt((i/4)/image.width):parseInt((i/4)/image.width)+1;
+				var y = ((i/4)%image.width==0)?image.width:(i/4)%image.width;
+				if(i==0)
+				{
+					x=0;
+					y=0;
+				}
+				var sita = Math.PI*input.value/180;
+
+				var x1 = Math.round((x-mid_x)*Math.cos(sita)-(y-mid_y)*Math.sin(sita)+mid_x);
+				var y1 = Math.round((x-mid_x)*Math.sin(sita)+(y-mid_y)*Math.cos(sita)+mid_y);
+
+				//alert("x:"+x+" y:"+y+" x1:"+x1+" y1:"+y1+" zong:"+canvas.width+" "+canvas.height);
+				imagedate.data[image.width*4*(x1-1)+y1*4]=temp[i];
+				imagedate.data[image.width*4*(x1-1)+y1*4+1]=temp[i+1];
+				imagedate.data[image.width*4*(x1-1)+y1*4+2]=temp[i+2];
+				imagedate.data[image.width*4*(x1-1)+y1*4+3]=temp[i+3];
+
+			}
+			context.putImageData(imagedate,0,0);
+
+		};
+
+		var button3 = document.getElementById("demo3");
+		button3.onclick=function(){
+			setGray(context);
+		};
+	};
+
+	function setGray(context){
+		var imagedate = context.getImageData(0,0,canvas.width,canvas.height);
+
+		temp = new Array(imagedate.data.length);
+
+		for(var i = 0;i<imagedate.data.length;i++){
+			temp[i]=imagedate.data[i];
+		}
+		for(var i =0;i<imagedate.data.length;i+=4){
+			var ogray=(temp[i]+temp[i+1]+temp[i+2])/3;
+
+			var ngray=0;
+			if(ogray>=0&&ogray<=50){
+				ngray=10/50*ogray;
+			}
+			if(ogray>=51&&ogray<=150){
+				ngray=190/100*(ogray-50)+10;
+			}
+			if(ogray>=150){
+				ngray=55/105*(ogray-151)+201;
+			}
+			imagedate.data[i]=ngray;
+			imagedate.data[i+1]=ngray;
+			imagedate.data[i+2]=ngray;
+		}
+		context.putImageData(imagedate,0,0);
+	}
+
+</script>
+</body>
+</html>
